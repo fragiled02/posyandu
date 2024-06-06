@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Kembang Anak</title>
+    <link rel="stylesheet" href="../posya_css/headwind.css?1">
+    <link rel="stylesheet" href="../posya_css/form.css?1">
+    <style>
+    .h100{height: 100%;} .w100{width: 100%;} 
+    * {box-sizing: border-box; scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;}
+        .fc{align-items: center; justify-content: center;}
+        .abso{position: absolute;}
+        .rel{position: relative;}
+    </style>
+</head>
+<body>
+<div class="flex-col w100 p0 m0 oxyh" id="mainContainer" style="height: 100vh;">
+
+    <div class="flex-col flex-100" id="kembangCon">
+        <div class="flex-10" id="headerCon">
+            <div class="flex-row h100">
+                <div class="flex-col flex-50 fc h100">
+                <select class="w100" id="selectBar">
+
+                </select>
+                </div>
+            </div>
+        </div>
+        <div class="rel" id="graphCon">
+
+            <canvas id="theChart" ></canvas>
+
+        </div>
+        <div id="footerCon" style="border: 1px solid green;">
+            
+        </div>
+    </div>
+
+</div>
+</body>
+<script src="../posya_js\dataset_1\bbideal_g.js?1"></script>
+<script src="../posya_js\dataset_1\bbideal_b.js?1"></script>
+<script src="../posya_js\dataset_1\tbideal_g.js?1"></script>
+<script src="../posya_js\dataset_1\tbideal_b.js?1"></script>
+<script src="../posya_js\dataset_1\lkideal_g.js?1"></script>
+<script src="../posya_js\dataset_1\lkideal_b.js?1"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="text/javascript" src="../posya_js/functions.js?4"></script>
+<script>
+
+
+const selectBar = document.getElementById("selectBar");
+let childs = [];
+let kembangData = [];
+let tglLahir;
+let maxLen;
+let the2Genders;
+let namax;
+
+selectBar.oninput = generateGraph;
+
+function generateGraph(){
+    getKembangData(childs[selectBar.value].id);
+    the2Genders = childs[selectBar.value].jenis_kelamin;
+    namax = childs[selectBar.value].nama;
+    console.log(the2Genders);
+}
+
+function createOptions(){
+    let i = 0;
+    childs.forEach(element => {
+        const opton = document.createElement("option");
+        opton.value = i;
+        opton.innerText = element.nama;
+        selectBar.appendChild(opton);
+        i++;
+    });
+    i = 0;
+}
+
+CRUD_master("../php/user/get_user_anak.php", []).then(
+    function (value) { 
+        if(value !== null){
+            childs = value;
+            createOptions();
+            generateGraph();
+        };
+
+    },
+    function (error) { alert("Database Error!") }
+);
+
+function getKembangData(id){
+    
+    CRUD_master("../php/anak/get_kembang_data.php", {"id": id}).then(
+        function (value) { 
+            kembangData = [];
+            if(value !== null){
+                kembangData = value;
+                
+            };
+            updateChart();
+        },
+        function (error) { alert("Database Error!") }
+    );
+    
+}
+
+
+
+//pesan
+function messanger(ori, ideal){
+    let mess1;
+
+    const ratio = (ori/ideal*100).toFixed(1);;
+
+    if((ratio>80 && ratio <= 100) || (ratio>100 && ratio <= 120)){
+        mess1 = 'A';
+    }else if((ratio>60 && ratio <= 80) || (ratio>120 && ratio <= 140)){
+        mess1 = 'B';
+    }else if((ratio>40 && ratio <= 60) || (ratio>100 && ratio <= 160)){
+        mess1 = 'C';
+    }else if((ratio>20 && ratio <= 0) || (ratio>100 && ratio <= 180)){
+        mess1 = 'D';
+    }else{
+        mess1 = 'E';
+    };
+
+    return "Index: "+ratio+"%, "+"Score: "+mess1;
+
+}
+
+//data
+let data1 = {
+    labels: [],
+    datasets: [
+    {
+        pointRadius: 3,
+        showLine: true,
+        label: 'BB Ideal',
+        pointBackgroundColor: "red", borderColor: 'red',
+        data: []
+    },
+    {
+        pointRadius: 3,
+        label: 'TB Ideal',
+        showLine: true,
+        pointBackgroundColor: "lightgreen", borderColor: 'lightgreen',
+        data: []
+    },
+    {
+        pointRadius: 3,
+        label: 'LK Ideal',
+        showLine: true,
+        pointBackgroundColor: "lightblue", borderColor: 'lightblue',
+        data: []
+    },
+    {
+        pointRadius: 12,
+        label: 'BB',
+        pointBackgroundColor: "red", borderColor: 'none',
+        data: []
+    },
+    {
+        pointRadius: 12,
+        label: 'TB',
+        pointBackgroundColor: "lightgreen", borderColor: 'none',
+        data: []
+    },
+    {
+        pointRadius: 12,
+        label: 'LK', 
+        pointBackgroundColor: "lightblue", borderColor: 'none',
+        data: []
+    }
+
+  ]
+}
+//config
+let config = {
+    type: 'scatter',
+    data: data1,
+    options:{
+        maintainAspectRatio: false,
+        responsive:true,
+        stacked: true,
+        interaction: 
+        {
+            intersect: false,
+            axis: 'r'
+        },
+        scales: {
+            xAxes: {
+                ticks: {color: 'white'},
+                title: {
+                    display: true,
+                    text: 'Umur (hari)',
+                    color: 'white',
+                    font:{
+                        size: 20
+                    }
+                }
+
+            },
+            yAxes: {
+                ticks: {color: 'white'},
+                title: {
+                    display: true,
+                    text: 'Data Komposit',
+                    color: 'white',
+                    font:{
+                        size: 20
+                    }
+                }
+
+            }
+     
+        },
+        plugins: {
+            legend: {
+                display: true,
+                labels: {
+                    color: 'white'
+                }
+            },
+            tooltip:{
+                callbacks:{
+                    label:((tooltipItem, data) => {
+                        let dtsI = tooltipItem.datasetIndex;
+                        let dtI = tooltipItem.dataIndex;
+                        let umur;
+                        let data1;
+                        let datasetInduex;
+                        let beratIdeal;
+                        let tingiIdeal;
+                        let lingkarIdeal;
+
+                        function hitungUmur(){
+                            datasetInduex = maxLen - (maxLen - umur);
+
+                            beratIdeal = tooltipItem.chart.data.datasets[0].data[datasetInduex].y;
+                            tingiIdeal = tooltipItem.chart.data.datasets[1].data[datasetInduex].y;
+                            lingkarIdeal = tooltipItem.chart.data.datasets[2].data[datasetInduex].y;
+                        }
+               
+
+                        if((dtsI == 3 || dtsI == 4 || dtsI == 5) && dtI<1856){
+                            umur = tooltipItem.chart.data.datasets[dtsI].data[dtI].x;
+                            data1 = tooltipItem.chart.data.datasets[dtsI].data[dtI].y;
+                            hitungUmur();
+
+                        }else if(dtsI == 3 || dtsI == 4 || dtsI == 5){
+                            data1 = tooltipItem.chart.data.datasets[dtsI].data[dtI].y;
+                            umur = maxLen;
+                            hitungUmur();
+                        }else if(dtI<1856){
+                            umur = tooltipItem.chart.data.datasets[dtsI].data[dtI].x;
+                            data1 = tooltipItem.chart.data.datasets[dtsI].data[dtI].y;
+                        };
+
+
+
+                            if(dtsI == 0){
+                                return "Berat Badan Ideal: "+ data1 + "kg";
+                            }else if(dtsI == 1){
+                                return "Tinggi Badan Ideal: " + data1 + "cm";
+                            }else if(dtsI == 2){
+                                return "Lingkar Kepala Ideal: "+ data1 + "cm";
+                            }else if(dtsI == 3){
+                                return "BB Anda: "+ data1 + "kg, Ideal: "+beratIdeal+"kg, "+messanger(data1, beratIdeal);
+                            }else if(dtsI == 4){
+                                return "TB Anda: "+ data1 + "cm, Ideal: "+tingiIdeal+"cm, "+messanger(data1, tingiIdeal);
+                            }else if(dtsI == 5){
+                                return "LK Anda: "+ data1 + "cm, Ideal: "+lingkarIdeal+"cm, "+messanger(data1, lingkarIdeal);
+                            }
+                        
+                        
+                        }
+                       
+                    )
+                }
+            }
+        }
+
+
+    }
+
+
+}
+
+
+
+//render
+let myChart;
+const ctx = document.getElementById('theChart');
+
+myChart = new Chart(ctx, config);
+
+
+//chart manipulation
+
+
+
+
+function updateChart(){
+    let bbf = []; let tbf = []; let lkf = [];
+
+    kembangData.forEach(element => {
+        let tgl = dateDiff(element.tanggal, element.tanggal_lahir)
+
+        let bb = {'x': tgl, 'y':element.bb};
+        bbf.push(bb);
+        let tb = {'x': tgl, 'y':element.tb};
+        tbf.push(tb);
+        let lk = {'x': tgl, 'y':element.lk};
+        lkf.push(lk);
+    });
+
+    
+    addOptimalValues(kembangData.length);
+
+    addData(bbf, tbf, lkf);
+}
+
+function refreshChart(){
+    myChart.update();
+    myChart.resize();
+}
+
+
+function addData(bbf, tbf, lkf) {
+    myChart.data.datasets[3].data = bbf;
+    myChart.data.datasets[4].data = tbf;
+    myChart.data.datasets[5].data = lkf;
+    refreshChart();
+}
+
+//optimal calculation
+function addOptimalValues(len){
+    let len1 = 0;
+
+    kembangData.forEach(element => {
+        let tgl = dateDiff(element.tanggal, element.tanggal_lahir)
+        if(tgl>len1){
+            len1 = tgl+1;
+        };
+    });
+    maxLen = len1;
+
+    let kilo1 = []; let kilo2 = []; let kilo3 = [];
+
+    let mega1, mega2, mega3;
+
+    if(the2Genders == 'l' || the2Genders == 'L'){
+        mega1 = bbideal_b;
+        mega2 = tbideal_b;
+        mega3 = lkideal_b;
+        myChart.data.datasets[0].label = "BB Ideal Laki2";
+        myChart.data.datasets[1].label = "TB Ideal Laki2";
+        myChart.data.datasets[2].label = "LK Ideal Laki2";
+
+    }else{
+        mega1 = bbideal_g;
+        mega2 = tbideal_g;
+        mega3 = lkideal_g;
+        myChart.data.datasets[0].label = "BB Ideal Perempuan";
+        myChart.data.datasets[1].label = "TB Ideal Perempuan";
+        myChart.data.datasets[2].label = "LK Ideal Perempuan";
+    };
+
+        myChart.data.datasets[3].label = "BB "+namax;
+        myChart.data.datasets[4].label = "TB "+namax;
+        myChart.data.datasets[5].label = "LK "+namax;
+
+    if(len1<1800){
+        for(let i=0; i<len1; i++){
+            kilo1.push(mega1[i]);
+            kilo2.push(mega2[i]);
+            kilo3.push(mega3[i]);
+        };
+        myChart.data.datasets[0].data = kilo1;
+        myChart.data.datasets[1].data = kilo2;
+        myChart.data.datasets[2].data = kilo3;
+    }else{
+        myChart.data.datasets[0].data = mega1;
+        myChart.data.datasets[1].data = mega2;
+        myChart.data.datasets[2].data = mega3;
+    }
+    
+    refreshChart();
+}
+
+
+
+</script>
+<style>
+#selectBar{
+    margin-left: 5vw;
+}
+#theChart{
+    height: 100;
+}
+@media screen and (orientation:landscape) {
+    #graphCon{
+        flex-basis: 70%;
+    }
+    #footerCon{
+        flex-basis: 20%;
+    }
+}
+
+@media screen and (orientation:portrait) {
+    #graphCon{
+        flex-basis: 50%;
+    }
+    #footerCon{
+        flex-basis: 40%;
+    }
+}
+</style>
+</html>

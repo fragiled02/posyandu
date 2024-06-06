@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../posya_css/headwind.css?a3s">
+    <link rel="stylesheet" href="../posya_css/form.css?dseses">
+    <style>
+    .h100{height: 100%;} .w100{width: 100%;} 
+    * {box-sizing: border-box; scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;}
+        .fc{align-items: center; justify-content: center;}
+        .abso{position: absolute;}
+        .rel{position: relative;}
+    </style>
+</head>
+<body>
+<div class="abso w100 h100" id="updateFormCon">
+    <div class="flex-col w100 h100 m0 fc rel">
+
+    <div class="flex-col fc abso cw" id="closeBtn" onclick="shutUpdateForm()">
+        <div class="border1 w100 fc anIcon">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            Close
+        </div>
+        
+        
+    </div>
+
+    <div class="login-box flex-col oxyh m0" style="align-items: left; background: rgba(0,0,0, 0.8); ">
+    <h2 id="insertTitle">Anak Belum Dipilih</h2>
+        <form action="../php/anak/insert_kunjungan.php" method="post">
+            <div class="user-box" style="display: none;">
+                <input id="insert_id" type="text" name="id_anak" required>
+                <label>id</label>
+            </div>
+            <div class="user-box">
+                <input type="date" id="tanggal" name="tanggal" placeholder="Format: DD/MM/YYYY" required style="margin-top: 22px;">
+                <label id="label_tanggal">Tanggal</label>
+            </div>
+            <div class="user-box">
+                <input id="insert_bb" type="text" name="bb" required>
+                <label>Berat Badan</label>
+            </div>
+            <div class="user-box">
+                <input id="insert_tb" type="text" name="tb" required>
+                <label>Tinggi Badan</label>
+            </div>
+            <div class="user-box">
+                <input id="insert_lk" type="text" name="lk" required>
+                <label>Lingkar Kepala</label>
+            </div>
+            <div class="user-box">
+                
+                <textarea name="catatan"></textarea>
+                <label>Catatan</label>
+            </div>
+
+            <div>
+                <button>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                Tambah
+                </button>
+            </div>
+        </form>
+    </div>
+
+    </div>
+</div>
+<div class="flex-col w100 p0 m0 oxyh" id="mainContainer" style="height: 100vh;">
+    <div class="flex-row flex-10 oxyh fc" id="searchBarContainer">
+
+        <div class="flex-row flex-40">
+
+            <input type="text" id="searchBar">
+        
+        </div>
+        <div class="flex-20">
+       
+            <select class="w100" id="selectBar">
+                <option value="0" selected>
+                    Nama
+                </option>
+                <option value="1">
+                    E-mail
+                </option>
+                <option value="2">
+                    NIK
+                </option>
+            </select>
+          
+
+        </div>
+        <div class="flex-40"></div>
+    </div>
+    <div class="flex-90 oxyh" >
+        <div class="cardList1 h100" id="cardContainer"> 
+
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="../posya_js/functions.js?2"></script>
+<script>
+let allUser = [];
+let allChild = [];
+
+const mainContainer = document.getElementById("mainContainer");
+const cardContainer = document.getElementById("cardContainer");
+const updateFormCon = document.getElementById("updateFormCon");
+const searchBar = document.getElementById("searchBar");
+const selectBar = document.getElementById("selectBar");
+const theID = document.getElementById("insert_id");
+
+let insertTitle = document.getElementById("insertTitle");
+let labelTanggal = document.getElementById("label_tanggal");
+let insertTanggal = document.getElementById("tanggal");
+
+let allCards = document.querySelectorAll(".card");
+let allShow = document.querySelectorAll(".icon_show")
+
+let allChildlet = document.getElementsByClassName("childlet");
+
+function shutUpdateForm(){
+    updateFormCon.style.display = 'none';
+};
+
+shutUpdateForm();
+
+insertTanggal.oninput = function(){
+    labelTanggal.innerText = "Tanggal Kunjungan: " + dateWithMonthName(convertDate(insertTanggal.value));
+}
+
+
+function updateDateDisplay(daet){
+    labelTanggal.innerText = "Tanggal Kunjungan: " + dateWithMonthName(daet);
+    insertTanggal.value = getCurrentDate2();
+};
+
+function doSearch(){
+    let theName = searchBar.value;
+    removeAllCards();
+    searchUser(theName);
+};
+
+searchBar.oninput = function(){
+    doSearch();
+};
+selectBar.oninput = function(){
+    doSearch();
+};
+
+
+
+
+
+function createCard(name, index){
+    let idx = document.createElement('p');
+    idx.innerText = index+1;
+
+    let cardx = document.createElement('div');
+    cardx.classList.add('card');
+
+    let imgcon = document.createElement('div');
+    imgcon.classList.add('imgCon');
+
+    let imeg = document.createElement('img');
+    imeg.setAttribute("src", "../posya_img/user/profile.png");
+    imgcon.appendChild(imeg);
+ 
+    let icons = document.createElement('div');
+    icons.classList.add('icons');
+
+    let show = document.createElement('img');
+    show.setAttribute("src", "../posya_img/user/profile-2user.png");
+    show.classList.add("icon_show");
+    icons.appendChild(show);
+
+    let pee = [];
+
+    pee[0] = document.createElement('p');
+    pee[0].innerText = name;
+    pee[0].classList.add("pName");
+    pee[0].classList.add("ma");
+
+    cardx.appendChild(idx);
+    cardx.appendChild(imgcon);
+
+    cardx.insertBefore(pee[0], cardx.childNodes[2]);
+    cardx.insertBefore(icons, cardx.childNodes[cardx.childNodes.length]);
+
+    cardContainer.append(cardx);
+
+};
+
+function addCardAnak(val, index){
+
+    let anakTitle;
+    anakTitle = document.createElement('p');
+    anakTitle.innerText = "Anak Anda: ";
+    anakTitle.classList.add("pName"); anakTitle.classList.add("bold");
+    allCards[index].insertBefore(anakTitle, allCards[index].childNodes[allCards[index].childNodes.length]);
+
+    for(let i=0; i<allChildlet.length; i++){
+        
+    };
+
+    for(let i=0; i<val.length; i++){
+        let pee = [];
+
+        pee[0] = document.createElement('p');
+        pee[0].innerText = val[i].nama;
+        pee[0].classList.add("pName");
+        pee[0].classList.add("childlet");
+        pee[0].setAttribute("id", val[i].id);
+
+        allCards[index].insertBefore(pee[0], allCards[index].childNodes[allCards[index].childNodes.length]);
+
+        pee[0].addEventListener("click", function(e){
+            theID.value = pee[0].id;
+            updateFormCon.style.display = 'block';
+            insertTitle.innerText = "Kunjungan Anak: " + val[i].nama;
+            updateDateDisplay(getCurrentDate());
+        });
+    };
+
+    allChildlet = document.getElementsByClassName("childlet");
+
+
+}
+
+function addIconsListener(index){
+    allShow[index].addEventListener("click", function(e){
+        displayAnak(allUser[index].id, index);
+        allShow[index].style.display = 'none';
+      
+    });
+};
+
+
+function removeAllCards(){
+ 
+  let cardElements = document.querySelectorAll(".card");
+
+  for (let card of cardElements) {
+    // Remove each card element from its parent node
+    card.parentNode.removeChild(card);
+  };
+};
+
+function cardFactory(len){
+
+
+    for (let i = 0; i < len; i++) {
+        createCard(allUser[i].name, i);
+    };
+};
+
+function iconFactory(len){
+    for (let ia = 0; ia < len; ia++){
+        addIconsListener(ia);
+    };
+};
+
+
+
+
+function searchUser(name){
+
+    CRUD_master("../php/user/select_user.php", {"nama": name, "sm": selectBar.value}).then(
+    function (value) { 
+    
+        if(value !== null){
+            
+            allUser = value;
+            let len = allUser.length;
+
+            allShow = document.getElementsByClassName("icon_show")
+                   
+            cardFactory(len);
+
+            allCards = document.getElementsByClassName("card");
+
+            iconFactory(len);
+
+        }else{
+            
+        }
+
+    },
+    function (error) { alert("Database Error!") }
+);
+};
+
+
+
+function displayAnak(id_user, index){
+
+    CRUD_master("../php/anak/select_anak.php", {"id": id_user}).then(
+    function (value) { 
+    
+        if(value !== null){
+       
+            addCardAnak(value, index);
+
+        }else{
+
+        }
+
+    },
+    function (error) { alert("Database Error!") }
+);
+
+};
+
+</script>
+<style>
+#closeBtn{
+    right: 10%;
+    top: 0px;
+    height: 10vh;
+}    
+#searchBar{
+    height: 10%;
+    width: 90%;
+    margin-left: 1rem;
+}
+#selectBar{
+    height: 20px;
+    width: 90%;
+    margin-left: 1rem;
+
+}
+.cardList1{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    grid-column-gap: 1rem;
+    grid-row-gap: 1rem;
+    padding: 1rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-shadow: 0 0 60px 2px rgba(255, 255, 255, 0.2);
+    border-top: 2px solid #8F8F8F;
+}
+
+.card{
+    display: flex;
+    text-align: center;
+    flex-direction: column;
+    align-items: left;
+    height: fit-content;
+    padding: 0px;
+    background: #f8f3e8;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.2), 0 0 40px rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+
+.card .imgCon{
+    margin-bottom: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.card p{
+    margin: 0px 0px 4px 16px;
+    font-size: 18px;
+    text-align: left;
+}
+
+.card .ma{
+    margin: 0px;
+    text-align: center;
+}
+
+.card p:first-child{
+    margin-top: 16px;
+}
+
+.card p:last-child{
+    margin-bottom: 16px;
+}
+
+.card .icons{
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+    margin-left: 16px;
+    margin-bottom: 16px;
+    margin-top: 16px;
+}
+
+.card .icons img{
+    cursor: pointer;
+}
+
+.childlet{
+    cursor: pointer;
+}
+
+@media screen and (orientation:landscape) {
+    #closeBtn{
+        width: 12vw;
+    }  
+    .card{
+        max-width: 100vw;
+    }
+    .card .imgCon img{
+        height: 10vw;
+        width: 10vw;
+    }
+    .card .icons img{
+        height: 4vw;
+        width: 4vw;
+    }
+}
+@media screen and (orientation:portrait) {
+    #closeBtn{
+        width: 18vw;
+    }  
+    .card{
+        max-width: 100vw;
+    }
+    .card .imgCon img{
+        height: 18vw;
+        width: 18vw;
+    }
+    .card .icons img{
+        height: 8vw;
+        width: 8vw;
+    }
+    .card .icons img:first-child{
+        margin-right: 30px;
+    }
+}
+
+</style>
+
+</body>
+</html>

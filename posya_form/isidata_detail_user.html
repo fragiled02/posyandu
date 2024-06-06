@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../posya_css/form.css?dse2">
+    <link rel="stylesheet" href="../posya_css/headwind.css?dew">
+    <title>Isi Data Tambahan</title>
+    <style>* {box-sizing: border-box; scroll-behavior: smooth; }</style>
+</head>
+<body>
+<div class="flex-col w100 gradient p0 m0" style="height: 100vh; position: relative; align-items: center; justify-content: center;">
+<div class="login-box xl m0" style="align-items: left; ">
+  <h2 id="jdl">Isi Data Anda</h2>
+  <form action="../php/user/process_detail_user.php" method="post">
+
+    <div class="form-xl">
+
+    <div class="select-box flex-col">
+        <label for="provinsi">Provinsi</label>
+        <select id="provinsi" name="provinsi" required>
+        </select>
+    </div>
+    <div class="select-box flex-col">
+        <label for="kota">Kota</label>
+        <select id="kota" name="kota" required>
+        </select>
+    </div>
+    <div class="select-box flex-col">
+        <label for="kecamatan">Kecamatan</label>
+        <select id="kecamatan" name="kecamatan" required>
+        </select>
+    </div>
+    <div class="select-box flex-col">
+        <label for="kelurahan">Kelurahan</label>
+        <select id="kelurahan" name="kelurahan" required>
+        </select>
+    </div>
+    <div class="user-box">
+      <input id="rt" type="text" name="rt" required>
+      <label>RT</label>
+    </div>
+    <div class="user-box">
+      <input id="rw" type="text" name="rw" required>
+      <label>RW</label>
+    </div>
+    <div class="user-box">
+      <input id="nik" type="text" name="nik" required>
+      <label>NIK</label>
+    </div>
+    <div class="user-box">
+      <input id="no_telp" type="text" name="no_telp" required>
+      <label>No. Telp</label>
+    </div>
+
+
+    </div>
+
+    <div>
+        <button>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <div id="btnsubmit">
+        Isi
+        </div>
+        </button>
+    </div>
+  </form>
+</div>
+</div>
+<script type="text/javascript" src="../posya_js/functions.js"></script>
+<script defer>
+
+const jdl = document.getElementById("jdl");
+const provinsi = document.getElementById("provinsi");
+const kota = document.getElementById("kota");
+const kecamatan = document.getElementById("kecamatan");
+const kelurahan = document.getElementById("kelurahan");
+const rt = document.getElementById("rt");
+const rw = document.getElementById("rw");
+const nik = document.getElementById("nik");
+const no_telp = document.getElementById("no_telp");
+const btnsubmit = document.getElementById("btnsubmit");
+
+function create_options(theSelect, json){
+
+    const oldOptions = theSelect.options;
+    for (i = 0, len = oldOptions.length; i < len; i++){
+        oldOptions[0].remove();
+    };
+
+    for (i = 0, len = json.length; i < len; i++) {
+        const optionlets = document.createElement('option');
+        optionlets.innerText = json[i].nama;
+        optionlets.setAttribute("id", json[i].id);
+        optionlets.setAttribute("value", json[i].nama);
+        theSelect.appendChild(optionlets);
+    };
+};
+
+prov_selected = false;
+provinsi.addEventListener('focus', input_prov);
+function input_prov(){
+    if(!prov_selected){
+        fetch_master("https://dev.farizdotid.com/api/daerahindonesia/provinsi").then(
+            function (value) { 
+                if(value.provinsi){
+                    create_options(provinsi, value.provinsi);
+                    input_kota();
+                };
+
+            },
+            function (error) { alert("Database Error!") }
+        );
+        prov_selected = true;
+    };
+    
+};
+
+
+provinsi.oninput = input_kota;
+
+function input_kota(){
+    fetch_master("https://dev.farizdotid.com/api/daerahindonesia/kota?id_provinsi=" + provinsi[provinsi.selectedIndex].id).then(
+        function (value) { 
+            if(value.kota_kabupaten){
+                create_options(kota, value.kota_kabupaten);
+                input_kecamatan();
+            };
+
+        },
+        function (error) { alert("Database Error!") }
+    );
+};
+
+kota.oninput = input_kecamatan;
+
+function input_kecamatan(){
+    fetch_master("https://dev.farizdotid.com/api/daerahindonesia/kecamatan?id_kota=" + kota[kota.selectedIndex].id).then(
+        function (value) { 
+            if(value.kecamatan){
+                create_options(kecamatan, value.kecamatan);
+                input_kelurahan();
+            };
+
+        },
+        function (error) { alert("Database Error!") }
+    );
+};
+
+kecamatan.oninput = input_kelurahan;
+function input_kelurahan(){
+    fetch_master("https://dev.farizdotid.com/api/daerahindonesia/kelurahan?id_kecamatan=" + kecamatan[kecamatan.selectedIndex].id).then(
+        function (value) { 
+            if(value.kelurahan){
+                create_options(kelurahan, value.kelurahan);
+            };
+
+        },
+        function (error) { alert("Database Error!") }
+    );
+};
+
+function display_detail(arr){
+    jdl.innerText = "Update Data Anda";
+
+    let displays = [];
+
+    displays[0] = document.createElement('option');
+    displays[0].innerText = arr.provinsi;
+    displays[0].setAttribute("value", arr.provinsi);
+    provinsi.appendChild(displays[0]);
+
+    displays[1] = document.createElement('option');
+    displays[1].innerText = arr.kota;
+    displays[1].setAttribute("value", arr.kota);
+    kota.appendChild(displays[1]);
+
+    displays[2] = document.createElement('option');
+    displays[2].innerText = arr.kecamatan;
+    displays[2].setAttribute("value", arr.kecamatan);
+    kecamatan.appendChild(displays[2]);
+
+    displays[3] = document.createElement('option');
+    displays[3].innerText = arr.kelurahan;
+    displays[3].setAttribute("value", arr.kelurahan);
+    kelurahan.appendChild(displays[3]);
+
+    rt.value = arr.rt;
+    rw.value = arr.rw;
+    nik.value = arr.nik;
+    no_telp.value = arr.no_telp;
+
+    btnsubmit.innerText = "Update";
+
+};
+
+CRUD_master("../php/user/get_detail_user.php", []).then(
+    function (value) { 
+        if(value[0].nik){
+            display_detail(value[0]);
+        };
+
+    },
+    function (error) { alert("Database Error!") }
+);
+
+
+
+</script>
+<style>
+@media screen and (orientation:portrait) {
+    .login-box{
+        margin-top: 50vw;
+    }
+}
+</style>
+</body>
+</html>

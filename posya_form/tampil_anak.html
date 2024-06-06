@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../posya_css/headwind.css?fefew">
+    <link rel="stylesheet" href="../posya_css/form.css?deses">
+    <style>
+    .h100{height: 100%;} .w100{width: 100%;} 
+    * {box-sizing: border-box; scroll-behavior: smooth; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;}
+        .fc{align-items: center; justify-content: center;}
+        .abso{position: absolute;}
+        .rel{position: relative;}
+    </style>
+</head>
+<body>
+<div class="abso w100 h100" id="updateFormCon">
+    <div class="flex-col w100 h100 m0 fc rel">
+
+    <div class="flex-col fc abso cw" id="closeBtn" onclick="shutUpdateForm()">
+        <div class="border1 w100 fc anIcon">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            Close
+        </div>
+        
+        
+    </div>
+
+    <div class="login-box flex-col oxyh m0" style="align-items: left; background: rgba(0,0,0, 0.8); ">
+    <h2 id="editTitle">Anak Belum Dipilih</h2>
+        <form action="../php/anak/update_anak.php" method="post">
+            <div class="user-box" style="display: none;">
+                <input id="update_namaIndex" type="text" name="oldNama" required>
+                <label>Nama Lama</label>
+            </div>
+            <div class="user-box">
+                <input id="update_nama" type="text" name="nama" required>
+                <label>Nama</label>
+            </div>
+            <div class="select-box flex-col">
+                <label for="jenis_kelamin">Jenis Kelamin</label>
+                <select id="jenis_kelamin" name="jenis_kelamin" required>
+                    <option value="n" disabled>Pilih Jenis Kelamin</option>
+                    <option value="l">Laki-laki</option>
+                    <option value="p">Perempuan</option>
+                </select>
+            </div>
+            <div class="user-box">
+                
+                <input type="date" id="tanggal_lahir" name="tanggal_lahir" placeholder="Format: DD/MM/YYYY" required style="margin-top: 22px;">
+                <label id="label_bday">Tanggal Lahir</label>
+            </div>
+            <div>
+                <button>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                Update
+                </button>
+            </div>
+        </form>
+    </div>
+
+    </div>
+</div>
+<div class="flex-col w100 p0 m0 oxyh" id="mainContainer" style="height: 100vh;">
+    <div class="flex-row flex-10 oxyh fc" id="searchBarContainer">
+
+        <div class="flex-row flex-50">
+
+            <input type="text" id="searchBar">
+        
+        </div>
+        <div class="flex-50">
+
+        </div>
+    </div>
+    <div class="flex-90 oxyh" >
+        <div class="cardList1 h100" id="cardContainer"> 
+
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="../posya_js/functions.js"></script>
+<script>
+let allChild = [];
+const mainContainer = document.getElementById("mainContainer");
+const cardContainer = document.getElementById("cardContainer");
+const updateFormCon = document.getElementById("updateFormCon");
+const searchBar = document.getElementById("searchBar");
+const label_luahir = document.getElementById("label_bday");
+const tanggal_luahir = document.getElementById("tanggal_lahir");
+let allCards, allNames, allUpdate, allDelete;
+let cardLength;
+
+function shutUpdateForm(){
+    updateFormCon.style.display = 'none';
+};
+
+updateFormCon.style.display = 'none';
+
+function search_bro(target, dataset, theName){
+    let targetName = theName.toLowerCase();
+    for(let i = 0; i<dataset.length; i++){
+
+        let raw = dataset[i].innerText.toLowerCase();
+        if(raw.includes(targetName)){
+            target[i].style.display = 'block';
+        }else{
+            target[i].style.display = 'none';
+        };
+    };
+};
+
+tanggal_luahir.oninput = function(){
+    let theDate = tanggal_luahir.value;
+    updateDateDisplay(theDate);
+};
+
+function updateDateDisplay(daet){
+    let raw1 = dateWithMonthName(convertDate(daet));
+    let final;
+
+    if(raw1.includes("undefined")){
+        final = "";
+    }else{
+        final = raw1;
+    };
+    label_luahir.innerText = "Tanggal Lahir: " + raw1;
+}
+
+searchBar.oninput = function(){
+    let theName = searchBar.value;
+    search_bro(allCards, allNames, theName);
+};
+
+function transgender(gender){
+    if(gender == 'l' || gender == 'L'){
+        return "Laki-Laki";
+    }else{
+        return "Perempuhan";
+    };
+};
+
+function createCard(name, jk, bday, index){
+    let idx = document.createElement('p');
+    idx.innerText = index;
+
+    let cardx = document.createElement('div');
+    cardx.classList.add('card');
+
+    let imgcon = document.createElement('div');
+    imgcon.classList.add('imgCon');
+
+    let imeg = document.createElement('img');
+    imeg.setAttribute("src", "../posya_img/user/profile.png");
+    imgcon.appendChild(imeg);
+ 
+    let icons = document.createElement('div');
+    icons.classList.add('icons');
+
+    let edit = document.createElement('img');
+    edit.setAttribute("src", "../posya_img/user/user-edit.png");
+    edit.classList.add("icon_update");
+    icons.appendChild(edit);
+
+    let del = document.createElement('img');
+    del.setAttribute("src", "../posya_img/user/profile-delete.png");
+    del.classList.add("icon_delete")
+    icons.appendChild(del);
+
+
+    let pee = [];
+
+    pee[0] = document.createElement('p');
+    pee[0].innerText =name;
+    pee[0].classList.add("pName");
+    pee[0].classList.add("ma");
+    
+
+    pee[1] = document.createElement('p');
+    pee[1].innerText = "Keterangan: ";
+    pee[1].classList.add("bold");
+
+    pee[2] = document.createElement('p');
+    pee[2].innerText = transgender(jk);
+
+    pee[3] = document.createElement('p');
+    pee[3].innerText = dateWithMonthName(convertDate(bday));
+
+    pee[4] = document.createElement('p');
+    pee[4].innerText = monthDayDiff(convertDate(bday), getCurrentDate());
+
+    cardx.appendChild(idx);
+    cardx.appendChild(imgcon);
+
+    for(i = 0; i<5; i++){
+        cardx.insertBefore(pee[4-i], cardx.childNodes[2]);
+    }
+    
+    cardx.insertBefore(icons, cardx.childNodes[cardx.childNodes.length]);
+
+    cardContainer.append(cardx);
+
+
+};
+
+function addIconsListener(index){
+    allUpdate[index].addEventListener("click", function(){
+        updateTitle.innerText = "Update Anak: " + allChild[index].nama;
+        updateNamaIndex.value = allChild[index].nama;
+        updateNama.value = allChild[index].nama;
+        updateBday.value = allChild[index].tanggal_lahir;
+        updateFormCon.style.display = 'block';
+        updateDateDisplay(allChild[index].tanggal_lahir);
+    });
+    allDelete[index].addEventListener("click", function(){
+        deleteChildPrompt(allChild[index].nama);
+    });
+  
+};
+
+let updateTitle = document.getElementById("editTitle");
+let updateNamaIndex = document.getElementById("update_namaIndex");
+let updateNama = document.getElementById("update_nama");
+let updateBday = document.getElementById("tanggal_lahir");
+
+
+function deleteChildPrompt(nama) {
+ 
+  if (confirm("Apakah Anda Yakin ingin menghapus anak Anda yang bernama: "+nama)) {
+    deleteChild(nama);
+  };
+ 
+};
+
+function deleteChild(nama){
+    CRUD_master("../php/anak/hapus_anak.php", {"nama": nama}).then(
+        function (value) { 
+                alert(value.mess);
+                location.reload();
+            },
+        function (error) { alert(error); location.reload(); }
+    );
+};
+
+function cardFactory(len){
+    for (let i = 0; i < len; i++) {
+        createCard(allChild[i].nama, allChild[i].jenis_kelamin, allChild[i].tanggal_lahir, i+1);
+    };
+};
+
+function iconFactory(len){
+    for (let ia = 0; ia < len; ia++){
+        addIconsListener(ia);
+    };
+};
+
+CRUD_master("../php/anak/get_anak.php", []).then(
+    function (value) { 
+   
+        if(value[0].jenis_kelamin !== null){
+           
+            allChild = value;
+            let len = allChild.length;
+
+            cardFactory(len);
+        
+            allUpdate = document.getElementsByClassName("icon_update");
+            allDelete = document.getElementsByClassName("icon_delete");
+
+            iconFactory(len);
+            allCards = document.getElementsByClassName("card");
+            allNames = document.getElementsByClassName("pName");
+            cardLength = allCards.length;
+
+        }else{
+            cardContainer.insertBefore(createCard(
+                "Anda Belum Menambahkan Anak!",
+                " ",
+                " ",
+                i+1
+            ), cardContainer.childNodes[0]);
+        }
+
+    },
+    function (error) { alert("Database Error!") }
+);
+
+
+</script>
+<style>
+#closeBtn{
+    right: 10%;
+    top: 0px;
+    height: 10vh;
+}    
+#searchBar{
+    height: 10%;
+    width: 90%;
+    margin-left: 1rem;
+}
+.cardList1{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+    grid-column-gap: 1rem;
+    grid-row-gap: 1rem;
+    padding: 1rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-shadow: 0 0 60px 2px rgba(255, 255, 255, 0.2);
+    border-top: 2px solid #8F8F8F;
+}
+
+.card{
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+    text-align: left;
+    height: fit-content;
+    padding: 0px;
+    background: #f8f3e8;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.2), 0 0 40px rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+
+.card .imgCon{
+    margin-bottom: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.card p{
+    margin: 0px 0px 4px 16px;
+    font-size: 18px;
+    text-align: left;
+}
+
+.card .ma{
+    margin: 0px;
+    text-align: center;
+}
+
+.card p:first-child{
+    margin-top: 16px;
+}
+
+.card p:last-child{
+    margin-bottom: 16px;
+}
+
+.card .icons{
+    display: flex;
+    flex-direction: row;
+    justify-content: right;
+    margin-right: 16px;
+    margin-bottom: 16px;
+}
+
+.card .icons img{
+    cursor: pointer;
+}
+
+@media screen and (orientation:landscape) {
+    #closeBtn{
+        width: 12vw;
+    }  
+    .card{
+        max-width: 100vw;
+    }
+    .card .imgCon img{
+        height: 10vw;
+        width: 10vw;
+    }
+    .card .icons img{
+        height: 4vw;
+        width: 4vw;
+    }
+}
+@media screen and (orientation:portrait) {
+    #closeBtn{
+        width: 18vw;
+    }  
+    .card{
+        max-width: 100vw;
+    }
+    .card .imgCon img{
+        height: 18vw;
+        width: 18vw;
+    }
+    .card .icons img{
+        height: 8vw;
+        width: 8vw;
+    }
+    .card .icons img:first-child{
+        margin-right: 30px;
+    }
+}
+
+</style>
+
+</body>
+</html>

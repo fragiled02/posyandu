@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        * {box-sizing: border-box; scroll-behavior: smooth;}
+    </style>
+    <link rel="stylesheet" href="../posya_css/headwind.css">
+    <title>Piano Tiles Cuy</title>
+</head>
+<body>
+<div class="flex-col" id="mainContainer" style="width: 100%;">
+
+<div class="flex-row flex-10"><h1>Piano Tiles</h1></div>
+
+<div class="flex-row flex-90" style="width: 100%;">
+    <div class="flex-col tabLeft">
+
+
+    </div>    
+    <div class="flex-col tabCenter">
+        <div class="flex-col flex-90" id="thePiano">
+        <h3 id="display_score">Score: </h3>
+        <h3 id="display_hp">HP: </h3>
+        </div>
+        <div class="flex-col flex-10">
+        </div>
+    </div>
+    <div class="flex-col tabRight" id="right">
+
+
+    </div>
+</div>
+
+
+
+
+
+</div>
+</body>
+</html>
+
+<script>
+
+function start(){
+    const thePiano = document.getElementById("thePiano");
+    const barHP = document.getElementById("display_hp");
+    const barScore = document.getElementById("display_score");
+
+    let game = setInterval(gameTick, 10);
+    let spawn = setInterval(createPianolets, 500);
+
+    let score = 0;
+    let hp = 3;
+    let ramping = 0.3;
+    let increasement = 0.01;
+
+    function gameTick(){
+        const allPianolets= document.getElementsByClassName("pianolets")
+        for (i = 0, len = allPianolets.length; i < len; i++) {
+
+            let str1 = allPianolets[i].style.top;
+            let str2 = str1.toString();
+            let str3 = str2.replace("%", "");
+            let float1 = parseFloat(str3);
+            let float2 = float1 + ramping;
+
+            allPianolets[i].style.top = float2 + "%";
+            if(float1 > 90){
+                allPianolets[i].remove();
+                hp -= 1;
+            };
+        };
+
+        barHP.innerText = "HP: " + hp;
+        barScore.innerText = "Score: " + score;
+
+        if(hp<1){
+            clearInterval(spawn);
+            clearInterval(game);
+            alert("Game Over! Score: " + score)
+        };
+
+    };
+
+    function createPianolets(){
+        const pianolets = document.createElement("div");
+        pianolets.classList.add("pianolets");
+        const y_bias = rando(75);
+        pianolets.style.left = y_bias +"%";
+        pianolets.style.top = "0%";
+        pianolets.addEventListener('click', action1);
+        ramping += increasement;
+
+        thePiano.insertBefore(pianolets, thePiano.childNodes[0]);
+    }
+
+    function rando(offset){
+        return Math.floor(Math.random() * offset) + 1;
+    };
+
+    function action1(a){
+        a.target.remove();
+        score += 1;
+    }
+
+    function restart(){
+        game = setInterval(gameTick, 10);
+        spawn = setInterval(createPianolets, 500);
+        hp = 3; score = 0; ramping = 0.3;
+    }
+
+}
+
+start();
+
+</script>
+
+<style>
+
+
+
+
+#thePiano{
+    position: relative;
+}
+
+
+.pianolets{
+    z-index: 1;
+    border-style: solid;
+    position: absolute;
+    width: 10%;
+    height: 20%;
+    padding: 0px;
+    margin: 0px;
+}
+
+#display_score{
+    position: absolute;
+    left: 50%;
+}
+#display_hp{
+    position: absolute;
+    left: 10%;
+}
+
+@media screen and (orientation:landscape) {
+    .tabLeft, .tabRight{
+        flex-basis: 30%;
+    }
+    .tabCenter{
+        flex-basis: 70%;
+    }
+}
+
+@media screen and (orientation:portrait) {
+    .tabLeft, .tabRight{
+        flex-basis: 0px;
+    }
+    .tabCenter{
+        flex-basis: 100%;
+    }
+}
+body{ margin: 0px; padding: 0px; overflow-x: hidden; border: none; }
+
+html{ border: none; }
+
+#mainContainer{
+    align-items: center; 
+    z-index: 0; 
+    border-color: red; 
+    height: 100vh;
+
+    overflow-x: hidden;
+}
+
+</style>
